@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Min Mat</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* Redigeringsfönster: fast topp och alltid synliga åtgärder */
+.edit-modal-content{position:relative;display:flex;flex-direction:column;max-height:92vh;overflow:hidden;}
+.edit-modal-content .modal-header{position:sticky;top:0;z-index:20;flex:0 0 auto;background:inherit;}
+.edit-modal-content .edit-toolbar{position:sticky;top:56px;z-index:19;flex:0 0 auto;background:inherit;}
+.edit-modal-content #edit-form{overflow-y:auto;min-height:0;padding-bottom:90px;}
+.edit-modal-content .edit-actions{position:sticky;bottom:0;z-index:20;background:inherit;padding:12px 0;margin-top:16px;border-top:1px solid #ddd;}
+.edit-ingredient-row{display:flex;align-items:center;gap:8px;}
+.drag-handle{flex:0 0 32px;width:32px;text-align:center;cursor:grab;touch-action:none;user-select:none;font-size:22px;padding:6px 0;}
+.drag-handle:active{cursor:grabbing;}
+.edit-ingredient-row.dragging,.edit-ingredient-row.touch-dragging{opacity:.55;}
+@media (max-width:700px){.edit-modal-content{max-height:94vh;}.edit-modal-content .edit-toolbar{top:52px;}.edit-ingredient-row{gap:5px;}.drag-handle{flex-basis:36px;width:36px;}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="site-title">🍴 Min Mat</div>
+  <nav>
+    <button class="nav-button active" data-view="recipe-view">🏠 Recept</button>
+    <button class="nav-button" data-view="browse-view">🔍 Bläddra</button>
+    <button class="nav-button" id="shopping-nav">🛒 Inköpslista</button>
+    <button class="nav-button" id="edit-nav">✏️ Redigera</button>
+  </nav>
+</header>
+
+<main>
+<section id="recipe-view" class="view active-view">
+  <div class="filters">
+    <div><label for="category-select">Kategori:</label><select id="category-select"></select></div>
+    <div><label for="mealtype-select">Måltidstyp:</label><select id="mealtype-select"></select></div>
+    <div><label for="time-select">Max tid:</label><select id="time-select">
+      <option value="alla">Alla</option><option value="15">15 min</option><option value="30">30 min</option>
+      <option value="45">45 min</option><option value="60">60 min</option><option value="90">90 min</option><option value="120">120 min</option>
+    </select></div>
+  </div>
+  <div class="recipe-selector"><label for="recipe-select">Välj recept:</label><select id="recipe-select"><option value="">Välj ett recept</option></select></div>
+
+  <div id="recipe-content" class="hidden">
+    <div id="recipe-info">
+      <img id="recipe-image" alt="">
+      <div class="recipe-details"><span id="recipe-time"></span><span id="recipe-difficulty"></span><span id="recipe-mealtype"></span><span id="recipe-score"></span><span id="recipe-cooked"></span></div>
+    </div>
+    <p id="recipe-description"></p><p id="recipe-link"></p>
+    <div class="recipe-columns">
+      <section id="ingredients-section">
+        <h2>Ingredienser</h2>
+        <div class="portion-wrapper"><label for="portioner">Portioner:</label><select id="portioner"></select></div>
+        <div class="ingredient-buttons"><button onclick="selectAllIngredients()">Markera alla</button><button onclick="deselectAllIngredients()">Avmarkera alla</button><button onclick="addToShoppingList()">Lägg till i inköpslista</button></div>
+        <ul id="ingredient-list"></ul>
+      </section>
+      <section id="instructions-section"><h2>Instruktioner</h2><ol id="instruction-list"></ol></section>
+    </div>
+  </div>
+</section>
+
+<section id="browse-view" class="view">
+  <div class="browse-heading"><div><h1>Bläddra bland recept</h1><p>Filtrera och hitta något att laga.</p></div><span id="browse-count"></span></div>
+  <div class="filters">
+    <div><label for="browse-category-select">Kategori:</label><select id="browse-category-select"></select></div>
+    <div><label for="browse-mealtype-select">Måltidstyp:</label><select id="browse-mealtype-select"></select></div>
+    <div><label for="browse-time-select">Max tid:</label><select id="browse-time-select">
+      <option value="alla">Alla</option><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option><option value="90">90 min</option><option value="120">120 min</option>
+    </select></div>
+  </div>
+  <div id="recipe-cards" class="recipe-cards"></div>
+</section>
+</main>
+
+<div id="edit-modal" class="modal hidden">
+  <div class="modal-backdrop" id="edit-backdrop"></div>
+  <div class="edit-modal-content">
+    <div class="modal-header"><h2>✏️ Redigera recept</h2><button id="close-edit">✕</button></div>
+    <div class="edit-toolbar"><select id="edit-recipe-select"><option value="">Välj recept</option></select><button type="button" id="new-recipe">Nytt recept</button></div>
+    <form id="edit-form">
+      <div class="edit-grid">
+        <label>Receptnamn<input id="edit-name" required></label><label>Portioner<input id="edit-servings" type="number" min="1"></label>
+        <label>Total tid<input id="edit-time" placeholder="45 min"></label><label>Svårighetsgrad<input id="edit-difficulty"></label>
+        <label>Förberedelsetid<input id="edit-timePrep"></label><label>Tillagningstid<input id="edit-timeCook"></label>
+        <label>Måltidstyp<input id="edit-mealType"></label><label>Betyg<input id="edit-score" type="number" min="0" max="5"></label>
+        <label>Senast lagad<input id="edit-lastCooked" type="date"></label><label>Antal gånger lagad<input id="edit-cookCount" type="number" min="0"></label>
+        <label>Bildnamn<input id="edit-image"></label><label>Kategorier<input id="edit-categories" placeholder="kyckling, soppa"></label>
+        <label class="full">Info<textarea id="edit-info"></textarea></label><label class="full">Länk<input id="edit-link" type="url"></label>
+      </div>
+      <h3>Ingredienser</h3><p class="edit-help">Dra raderna upp eller ner för att ändra ordningen. Fungerar med mus och touch.</p><div id="edit-ingredients"></div><button type="button" id="add-ingredient">+ Ingrediens</button>
+      <h3>Instruktioner</h3><div id="edit-instructions"></div><button type="button" id="add-instruction">+ Steg</button>
+      <div class="edit-actions"><button type="submit">💾 Spara</button><button type="button" class="danger" id="delete-recipe">🗑️ Ta bort</button></div>
+      <p id="edit-status"></p>
+    </form>
+  </div>
+</div>
+
+<div id="shopping-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="shopping-modal-content">
+    <div class="modal-header"><h2>🛒 Inköpslista</h2><button id="close-shopping">✕</button></div>
+    <div class="shopping-actions"><button onclick="copyShoppingList()">Kopiera inköpslista</button><button onclick="resetShoppingList()">Rensa inköpslista</button></div>
+    <ul id="shopping-list"></ul>
+  </div>
+</div>
+
+<script>
+let recipes={}, shoppingListItems={}, selectedRecipeKey='';
+
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function cats(r){return Array.isArray(r.categories)?r.categories:[];}
+
+function recipeMatches(r,c,m,t){
+  return (c==='alla'||cats(r).includes(c)) &&
+         (m==='alla'||r.mealType===m) &&
+         (t==='alla'||(!isNaN(parseInt(r.time))&&parseInt(r.time)<=parseInt(t)));
+}
+
+function populateFilters(){
+  const cs=[document.getElementById('category-select'),document.getElementById('browse-category-select')];
+  const ms=[document.getElementById('mealtype-select'),document.getElementById('browse-mealtype-select')];
+  const C=new Set(),M=new Set();
+  Object.values(recipes).forEach(r=>{cats(r).forEach(x=>C.add(x));if(r.mealType)M.add(r.mealType);});
+  cs.forEach(s=>{s.innerHTML='<option value="alla">Alla</option>';[...C].sort((a,b)=>a.localeCompare(b,'sv')).forEach(x=>{let o=document.createElement('option');o.value=x;o.textContent=cap(x);s.appendChild(o);});});
+  ms.forEach(s=>{s.innerHTML='<option value="alla">Alla</option>';[...M].sort((a,b)=>a.localeCompare(b,'sv')).forEach(x=>{let o=document.createElement('option');o.value=x;o.textContent=x;s.appendChild(o);});});
+}
+
+function filterRecipes(){
+  const c=document.getElementById('category-select').value,m=document.getElementById('mealtype-select').value,t=document.getElementById('time-select').value,s=document.getElementById('recipe-select');
+  s.innerHTML='<option value="">Välj ett recept</option>';
+  Object.keys(recipes).filter(k=>recipeMatches(recipes[k],c,m,t)).sort((a,b)=>a.localeCompare(b,'sv')).forEach(k=>{let o=document.createElement('option');o.value=k;o.textContent=k;s.appendChild(o);});
+  selectedRecipeKey='';clearRecipe();
+}
+
+function clearRecipe(){
+  document.getElementById('recipe-content').classList.add('hidden');
+  document.getElementById('ingredient-list').innerHTML='';document.getElementById('instruction-list').innerHTML='';
+}
+
+function updateRecipe(){
+  const key=document.getElementById('recipe-select').value,r=recipes[key];selectedRecipeKey=key;
+  if(!r){clearRecipe();return;}
+  document.getElementById('recipe-content').classList.remove('hidden');
+  const p=document.getElementById('portioner');p.innerHTML='';
+  for(let i=1;i<=14;i++){let o=document.createElement('option');o.value=i;o.textContent=i;if(i===Number(r.servings))o.selected=true;p.appendChild(o);}
+  let tt=r.timePrep&&r.timeCook?`⏱ Förberedelse: ${r.timePrep} min • Tillagning: ${r.timeCook} min • Totalt: ${r.time||''}`:`⏱ ${r.time||''}`;
+  document.getElementById('recipe-time').textContent=tt;
+  document.getElementById('recipe-difficulty').textContent=r.difficulty?`★ ${r.difficulty}`:'';
+  document.getElementById('recipe-mealtype').textContent=r.mealType?`🍽 ${r.mealType}`:'';
+  document.getElementById('recipe-score').textContent=Number(r.score)>0?`⭐ ${r.score}/5`:'';
+  document.getElementById('recipe-cooked').textContent=(Number(r.cookCount)>0?`Lagats ${r.cookCount} gånger`:'')+(r.lastCooked?`${Number(r.cookCount)>0?' • ':''}Senast: ${r.lastCooked}`:'');
+  document.getElementById('recipe-description').textContent=r.info||'';
+  const lc=document.getElementById('recipe-link');lc.innerHTML='';
+  if(r.link){let a=document.createElement('a');a.href=r.link;a.textContent='🔗 Originalrecept';a.target='_blank';a.rel='noopener noreferrer';lc.appendChild(a);}
+  const im=document.getElementById('recipe-image');im.src=`Matbilder/${r.image||key}.jpg`;im.onerror=()=>{im.onerror=null;im.src=`Matbilder/${r.image||key}.png`;};im.alt=key;
+  updateIngredients();updateInstructions();
+}
+document.getElementById('portioner').addEventListener('change',updateIngredients);
+
+function updateIngredients(){
+  const r=recipes[selectedRecipeKey],p=Number(document.getElementById('portioner').value),ul=document.getElementById('ingredient-list');ul.innerHTML='';
+  if(!r)return;
+  r.ingredients.forEach(x=>{
+    let a='';if(x.amount!==''&&x.amount!==null&&!isNaN(x.amount)){let n=Number(x.amount)*p/Number(r.servings);a=Number.isInteger(n)?String(n):n.toFixed(2);}
+    let li=document.createElement('li');li.dataset.amount=a;li.dataset.unit=x.unit||'';li.dataset.name=x.name||'';
+    let cb=document.createElement('input');cb.type='checkbox';cb.className='ingredient-checkbox';cb.checked=x.optional!==true;
+    let sp=document.createElement('span');sp.textContent=[a,x.unit||'',x.name||''].filter(Boolean).join(' ')+(x.optional===true?' (valfri)':'');
+    li.append(cb,sp);ul.appendChild(li);
+  });
+}
+function updateInstructions(){
+  const ul=document.getElementById('instruction-list');ul.innerHTML='';const r=recipes[selectedRecipeKey];if(!r)return;
+  r.instructions.forEach(x=>{let li=document.createElement('li');li.textContent=x;ul.appendChild(li);});
+}
+function selectAllIngredients(){document.querySelectorAll('#ingredient-list input').forEach(x=>x.checked=true);}
+function deselectAllIngredients(){document.querySelectorAll('#ingredient-list input').forEach(x=>x.checked=false);}
+
+function addToShoppingList(){
+  document.querySelectorAll('#ingredient-list li').forEach(li=>{
+    const cb=li.querySelector('input');if(!cb.checked)return;
+    const amount=parseFloat(li.dataset.amount),unit=li.dataset.unit,name=li.dataset.name,key=unit+'|'+name;
+    if(!shoppingListItems[key])shoppingListItems[key]={amount:0,unit,name};
+    if(!isNaN(amount))shoppingListItems[key].amount+=amount;
+  });
+  updateShoppingList();openShoppingList();
+}
+function updateShoppingList(){
+  const ul=document.getElementById('shopping-list');ul.innerHTML='';const groups={};
+  Object.values(shoppingListItems).forEach(x=>{let c=categorizeIngredient(x.name);(groups[c]??=[]).push(x);});
+  Object.keys(groups).forEach(c=>{let h=document.createElement('li');h.className='shopping-category';h.textContent=c;ul.appendChild(h);groups[c].forEach(x=>{let li=document.createElement('li');let a=Number.isInteger(x.amount)?String(x.amount):x.amount.toFixed(2);li.textContent=`${a} ${x.unit} ${x.name}`;ul.appendChild(li);});});
+}
+function categorizeIngredient(s){s=s.toLowerCase();if(/spenat|mango|lök|gurka|paprika|morot|citron|lime|kiwi|apelsin/.test(s))return'Grönsaker & frukt';if(s.includes('pasta'))return'Pasta';if(/kyckling|bacon|kött/.test(s))return'Kött';if(s.includes('ägg'))return'Ägg';return'Övrigt';}
+function resetShoppingList(){shoppingListItems={};updateShoppingList();}
+async function copyShoppingList(){
+  const text=[...document.querySelectorAll('#shopping-list li:not(.shopping-category)')].map(x=>x.innerText.trim()).join('\r\n');
+  if(!text){alert('Inköpslistan är tom.');return;}
+  try{await navigator.clipboard.writeText(text);}catch(e){let t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.left='-9999px';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}
+  alert('Inköpslistan har kopierats!');
+}
+const modal=document.getElementById('shopping-modal');
+function openShoppingList(){updateShoppingList();modal.classList.remove('hidden');}
+function closeShoppingList(){modal.classList.add('hidden');}
+document.getElementById('shopping-nav').onclick=openShoppingList;
+
+
+const editModal=document.getElementById('edit-modal');
+let editCurrent='';
+function openEditModal(){
+  populateEditRecipes();
+  const key=selectedRecipeKey || document.getElementById('recipe-select').value;
+  editModal.classList.remove('hidden');
+  loadEditRecipe(key||'');
+}
+function closeEditModal(){editModal.classList.add('hidden');}
+document.getElementById('close-edit').onclick=closeEditModal;
+document.getElementById('edit-backdrop').onclick=closeEditModal;
+function populateEditRecipes(){
+  const s=document.getElementById('edit-recipe-select'); const old=s.value;
+  s.innerHTML='<option value="">Nytt recept</option>';
+  Object.keys(recipes).sort((a,b)=>a.localeCompare(b,'sv')).forEach(k=>{let o=document.createElement('option');o.value=k;o.textContent=k;s.appendChild(o);});
+  if(recipes[old])s.value=old;
+}
+function loadEditRecipe(key){
+  editCurrent=key; document.getElementById('edit-recipe-select').value=key;
+  const r=recipes[key]||{servings:4,time:'',timePrep:'',timeCook:'',difficulty:'',info:'',link:'',lastCooked:'',cookCount:0,score:0,mealType:'',categories:[],image:'',ingredients:[],instructions:[]};
+  const vals={name:key,servings:r.servings,time:r.time,timePrep:r.timePrep,timeCook:r.timeCook,difficulty:r.difficulty,info:r.info,link:r.link,lastCooked:r.lastCooked,cookCount:r.cookCount,score:r.score,mealType:r.mealType,image:r.image,categories:Array.isArray(r.categories)?r.categories.join(', '):''};
+  Object.entries(vals).forEach(([k,v])=>document.getElementById('edit-'+k).value=v??'');
+  const ib=document.getElementById('edit-ingredients');ib.innerHTML='';(r.ingredients||[]).forEach(x=>addEditIngredient(x));
+  const ins=document.getElementById('edit-instructions');ins.innerHTML='';(r.instructions||[]).forEach(x=>addEditInstruction(x));
+  renumberEditInstructions();
+  document.getElementById('edit-status').textContent='';
+}
+function addEditIngredient(x={}){
+  const row=document.createElement('div');row.className='edit-ingredient-row';row.draggable=false;
+  row.innerHTML='<span class="drag-handle" title="Dra för att flytta">☷</span><input class="ei-amount" type="number" step="any" placeholder="Mängd"><input class="ei-unit" placeholder="Enhet"><input class="ei-name" placeholder="Ingrediens"><label><input class="ei-optional" type="checkbox"> valfri</label><button type="button" class="remove-edit">✕</button>';
+  row.querySelector('.ei-amount').value=x.amount??'';row.querySelector('.ei-unit').value=x.unit??'';row.querySelector('.ei-name').value=x.name??'';row.querySelector('.ei-optional').checked=x.optional===true;row.querySelector('.remove-edit').onclick=()=>row.remove();
+
+  const handle=row.querySelector('.drag-handle');
+  handle.draggable=true;
+  handle.addEventListener('dragstart',e=>{e.stopPropagation();row.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','ingredient');});
+  handle.addEventListener('dragend',e=>{e.stopPropagation();row.classList.remove('dragging');});
+  row.addEventListener('dragover',e=>{e.preventDefault();const dragging=document.querySelector('.edit-ingredient-row.dragging');if(!dragging||dragging===row)return;const rect=row.getBoundingClientRect();const after=e.clientY>rect.top+rect.height/2;row.parentNode.insertBefore(dragging,after?row.nextSibling:row);});
+
+  // Touch: only the ☷ handle starts a drag. Normal scrolling/tapping elsewhere is untouched.
+  let touchDragging=false,lastY=0;
+  handle.addEventListener('touchstart',e=>{touchDragging=true;lastY=e.touches[0].clientY;row.classList.add('touch-dragging');e.stopPropagation();},{passive:true});
+  handle.addEventListener('touchmove',e=>{
+    if(!touchDragging)return;
+    e.preventDefault();e.stopPropagation();
+    const y=e.touches[0].clientY;lastY=y;
+    const rows=[...document.querySelectorAll('.edit-ingredient-row')].filter(x=>x!==row);
+    let target=null;
+    for(const r of rows){const b=r.getBoundingClientRect();if(y>b.top&&y<b.bottom){target=r;break;}}
+    if(target){const b=target.getBoundingClientRect();const after=y>b.top+b.height/2;target.parentNode.insertBefore(row,after?target.nextSibling:target);}
+  },{passive:false});
+  const endTouch=()=>{touchDragging=false;row.classList.remove('touch-dragging');};
+  handle.addEventListener('touchend',endTouch,{passive:true});handle.addEventListener('touchcancel',endTouch,{passive:true});
+
+  document.getElementById('edit-ingredients').appendChild(row);
+}
+function ibDragging(){return document.querySelector('.edit-ingredient-row.dragging,.edit-ingredient-row.touch-dragging');}
+function addEditInstruction(x=''){const row=document.createElement('div');row.className='edit-instruction-row';row.innerHTML='<strong></strong><input class="einst"><button type="button" class="remove-edit">✕</button>';row.querySelector('.einst').value=x;row.querySelector('.remove-edit').onclick=()=>{row.remove();renumberEditInstructions();};document.getElementById('edit-instructions').appendChild(row);renumberEditInstructions();}
+function renumberEditInstructions(){[...document.querySelectorAll('.edit-instruction-row')].forEach((r,i)=>r.querySelector('strong').textContent=(i+1)+'.');}
+document.getElementById('edit-recipe-select').onchange=e=>loadEditRecipe(e.target.value);
+document.getElementById('new-recipe').onclick=()=>loadEditRecipe('');
+document.getElementById('add-ingredient').onclick=()=>addEditIngredient();
+document.getElementById('add-instruction').onclick=()=>addEditInstruction();
+document.getElementById('edit-form').onsubmit=async e=>{
+ e.preventDefault(); const name=document.getElementById('edit-name').value.trim(); if(!name){alert('Skriv ett receptnamn.');return;}
+ const ingredients=[...document.querySelectorAll('.edit-ingredient-row')].map(r=>({amount:r.querySelector('.ei-amount').value===''?'':Number(r.querySelector('.ei-amount').value),unit:r.querySelector('.ei-unit').value.trim(),name:r.querySelector('.ei-name').value.trim(),optional:r.querySelector('.ei-optional').checked})).filter(x=>x.name);
+ const instructions=[...document.querySelectorAll('.einst')].map(x=>x.value.trim()).filter(Boolean);
+ const r={servings:Number(document.getElementById('edit-servings').value)||1,time:document.getElementById('edit-time').value.trim(),timePrep:document.getElementById('edit-timePrep').value.trim(),timeCook:document.getElementById('edit-timeCook').value.trim(),difficulty:document.getElementById('edit-difficulty').value.trim(),info:document.getElementById('edit-info').value.trim(),link:document.getElementById('edit-link').value.trim(),lastCooked:document.getElementById('edit-lastCooked').value,cookCount:Number(document.getElementById('edit-cookCount').value)||0,score:Number(document.getElementById('edit-score').value)||0,mealType:document.getElementById('edit-mealType').value.trim(),categories:document.getElementById('edit-categories').value.split(',').map(x=>x.trim()).filter(Boolean),image:document.getElementById('edit-image').value.trim()||name,ingredients,instructions};
+ try{const res=await fetch('spara_recept.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oldName:editCurrent,newName:name,recipe:r})});const data=await res.json();if(!res.ok||!data.success)throw new Error(data.error||'Kunde inte spara.');if(data.recipes&&typeof data.recipes==='object'){recipes=data.recipes;}else{recipes[name]=r;}populateFilters();filterRecipes();document.getElementById('recipe-select').value=name;selectedRecipeKey=name;updateRecipe();populateEditRecipes();document.getElementById('edit-recipe-select').value=name;document.getElementById('edit-status').textContent='Sparat!';}catch(err){document.getElementById('edit-status').textContent='Fel: '+err.message;}
+};
+document.getElementById('delete-recipe').onclick=async()=>{const name=document.getElementById('edit-name').value.trim();if(!name||!recipes[name]){alert('Välj ett befintligt recept.');return;}if(!confirm('Ta bort '+name+'?'))return;try{const res=await fetch('spara_recept.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({delete:name})});const data=await res.json();if(!res.ok||!data.success)throw new Error(data.error||'Kunde inte ta bort.');if(data.recipes&&typeof data.recipes==='object'){recipes=data.recipes;}else{delete recipes[name];}populateFilters();filterRecipes();populateEditRecipes();loadEditRecipe('');document.getElementById('edit-status').textContent='Receptet är borttaget.';}catch(err){document.getElementById('edit-status').textContent='Fel: '+err.message;}};
+
+document.getElementById('edit-nav').onclick=openEditModal;
+document.getElementById('close-shopping').onclick=closeShoppingList;
+document.querySelector('.modal-backdrop').onclick=closeShoppingList;
+
+function updateBrowseCards(){
+  const c=document.getElementById('browse-category-select').value,m=document.getElementById('browse-mealtype-select').value,t=document.getElementById('browse-time-select').value,box=document.getElementById('recipe-cards');
+  box.innerHTML='';
+  const keys=Object.keys(recipes).filter(k=>recipeMatches(recipes[k],c,m,t)).sort((a,b)=>a.localeCompare(b,'sv'));
+  document.getElementById('browse-count').textContent=`${keys.length} recept`;
+  keys.forEach(k=>{
+    const r=recipes[k],card=document.createElement('article');card.className='recipe-card';
+    const im=document.createElement('img');im.src=`Matbilder/${r.image||k}.jpg`;im.alt=k;im.onerror=()=>{im.onerror=null;im.src=`Matbilder/${r.image||k}.png`;};
+    const b=document.createElement('div');b.className='recipe-card-body';
+    b.innerHTML=`<h2></h2><p></p><div class="card-details"></div>`;b.querySelector('h2').textContent=k;b.querySelector('p').textContent=r.info||'Ingen beskrivning ännu.';b.querySelector('.card-details').textContent=[r.time?`⏱ ${r.time}`:'',r.mealType?`🍽 ${r.mealType}`:'',Number(r.score)>0?`⭐ ${r.score}/5`:'' ].filter(Boolean).join(' • ');
+    card.append(im,b);card.onclick=()=>{showView('recipe-view');document.querySelectorAll('.nav-button').forEach(x=>x.classList.remove('active'));document.querySelector('[data-view="recipe-view"]').classList.add('active');let s=document.getElementById('recipe-select');s.innerHTML='<option value="">Välj ett recept</option>';let o=document.createElement('option');o.value=k;o.textContent=k;s.appendChild(o);s.value=k;updateRecipe();};box.appendChild(card);
+  });
+}
+
+function showView(id){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active-view'));document.getElementById(id).classList.add('active-view');if(id==='browse-view')updateBrowseCards();}
+document.querySelectorAll('.nav-button[data-view]').forEach(b=>b.onclick=()=>{showView(b.dataset.view);document.querySelectorAll('.nav-button').forEach(x=>x.classList.remove('active'));b.classList.add('active');});
+document.getElementById('recipe-select').addEventListener('change', updateRecipe);
+['category-select','mealtype-select','time-select'].forEach(id=>document.getElementById(id).onchange=filterRecipes);
+['browse-category-select','browse-mealtype-select','browse-time-select'].forEach(id=>document.getElementById(id).onchange=updateBrowseCards);
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  try{const r=await fetch('recept.json?v='+Date.now());recipes=await r.json();populateFilters();filterRecipes();}
+  catch(e){console.error(e);alert('Kunde inte läsa recept.json.');}
+});
+</script>
+</body>
+</html>
