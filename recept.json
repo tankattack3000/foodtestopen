@@ -1,305 +1,121 @@
 {
-"Mangokyckling": {
+  "Mangokyckling": {
     "servings": 4,
-
     "time": "45 min",
     "timePrep": "5",
     "timeCook": "40",
-
     "difficulty": "Medel",
-
     "info": "En krämig och smakrik kycklingrätt med mango, mango chutney och korma. Serveras med ris, mango, gurka, jordnötter och lime.",
-
     "link": "",
-
     "lastCooked": "2026-01-01",
     "cookCount": 2,
     "score": 4,
-
     "mealType": "Huvudrätt",
-
-    "categories": [
-        "kyckling"
-    ],
-
-    "image": "Mangokyckling",
-
+    "categories": ["kyckling"],
+    "image": "Mangokyckling.jpg",
     "ingredients": [
-
-        {
-            "amount": 600,
-            "unit": "g",
-            "name": "kycklingfilé",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "apelsin",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "förp",
-            "name": "korma matlagningssås (à 450 g)",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "dl",
-            "name": "mango chutney",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "mogen mango",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "gurka",
-            "optional": false
-        },
-		
-        {
-            "amount": 1,
-            "unit": "dl",
-            "name": "saltade och rostade jordnötter",
-            "optional": false
-        },
-		        {
-            "amount": 4,
-            "unit": "port",
-            "name": "ris",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "gul lök",
-            "optional": false
-        },
-		{
-            "amount": 1,
-            "unit": "msk",
-            "name": "olja",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "lime",
-            "optional": false
-        }
+      {"amount":600,"unit":"g","name":"kycklingfilé","optional":false},
+      {"amount":1,"unit":"st","name":"apelsin","optional":false},
+      {"amount":1,"unit":"förp","name":"korma matlagningssås (à 450 g)","optional":false},
+      {"amount":1,"unit":"dl","name":"mango chutney","optional":false},
+      {"amount":1,"unit":"st","name":"mogen mango","optional":false},
+      {"amount":1,"unit":"st","name":"gurka","optional":false},
+      {"amount":1,"unit":"dl","name":"saltade och rostade jordnötter","optional":false},
+      {"amount":4,"unit":"port","name":"ris","optional":false},
+      {"amount":1,"unit":"st","name":"gul lök","optional":false},
+      {"amount":1,"unit":"msk","name":"olja","optional":false},
+      {"amount":1,"unit":"st","name":"lime","optional":false}
     ],
-
     "instructions": [
-        "Koka riset enligt anvisningen på förpackningen.",
-        "Skala och skär löken i grova bitar. Skär kycklingen i bitar och stek den och löken i oljan i en stekpanna.",
-        "Pressa saften från apelsinen och rör ner den, matlagningssåsen och mango chutneyn i stekpannan. Låt sjuda ca 5 minuter.",
-        "Till servering: Skala och skär mangon i bitar. Skär gurkan i tärningar och limen i klyftor.",
-        "Servera grytan med ris, mango, gurka, jordnötter och limeklyftor."
+      "Koka riset enligt anvisningen på förpackningen.",
+      "Skala och skär löken i grova bitar. Skär kycklingen i bitar och stek den och löken i oljan i en stekpanna.",
+      "Pressa saften från apelsinen och rör ner den, matlagningssåsen och mango chutneyn i stekpannan. Låt sjuda ca 5 minuter.",
+      "Till servering: Skala och skär mangon i bitar. Skär gurkan i tärningar och limen i klyftor.",
+      "Servera grytan med ris, mango, gurka, jordnötter och limeklyftor."
     ]
-},
-"Lax med fetaost & pesto": {
+  },
+  "Lax med fetaost & pesto": {
     "servings": 4,
-
     "time": "30 min",
     "timePrep": "10",
     "timeCook": "20",
-
     "difficulty": "",
-
     "info": "En enkel laxrätt med fetaost, crème fraîche och pesto. Serveras med ris eller gryn.",
-
     "link": "",
-
     "lastCooked": "",
     "cookCount": 0,
     "score": 0,
-
     "mealType": "Huvudrätt",
-
-    "categories": [
-        "fisk"
-    ],
-
-    "image": "Lax med fetaost & pesto",
-
+    "categories": ["fisk"],
+    "image": "Lax med fetaost & pesto.jpg",
     "ingredients": [
-        {
-            "amount": 500,
-            "unit": "g",
-            "name": "laxfilé",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "dl",
-            "name": "crème fraiche",
-            "optional": false
-        },
-        {
-            "amount": 150,
-            "unit": "g",
-            "name": "fetaost",
-            "optional": false
-        },
-        {
-            "amount": 2,
-            "unit": "msk",
-            "name": "pesto",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "citron",
-            "optional": false
-        },
-        {
-            "amount": "",
-            "unit": "",
-            "name": "gryn",
-            "optional": true
-        }
+      {"amount":500,"unit":"g","name":"laxfilé","optional":false},
+      {"amount":1,"unit":"dl","name":"crème fraiche","optional":false},
+      {"amount":150,"unit":"g","name":"fetaost","optional":false},
+      {"amount":2,"unit":"msk","name":"pesto","optional":false},
+      {"amount":1,"unit":"st","name":"citron","optional":false},
+      {"amount":"","unit":"","name":"gryn","optional":true}
     ],
-
     "instructions": [
-        "Sätt ugnen på 210°.",
-        "Mosa samman fetaost, crème fraîche och pesto. Tillsätt rivet skal från en citron och lite pressad citron. Smaka av med salt och peppar.",
-        "Bred blandningen över laxen och baka i ugnen i ca 20 minuter.",
-        "Servera med ris eller gryn."
+      "Sätt ugnen på 210°.",
+      "Mosa samman fetaost, crème fraîche och pesto. Tillsätt rivet skal från en citron och lite pressad citron. Smaka av med salt och peppar.",
+      "Bred blandningen över laxen och baka i ugnen i ca 20 minuter.",
+      "Servera med ris eller gryn."
     ]
-},
-
-
-"Bananpannkaka": {
+  },
+  "Bananpannkaka": {
     "servings": 2,
-
     "time": "15 min",
     "timePrep": "5",
     "timeCook": "10",
-
     "difficulty": "Lätt",
-
     "info": "",
-
     "link": "",
-
     "lastCooked": "2026-01-01",
     "cookCount": 2,
     "score": 4,
-
     "mealType": "Mellanmål",
-
-    "categories": [
-        "barnmat"
-    ],
-
-    "image": "Bananpannkaka",
-
+    "categories": ["barnmat"],
+    "image": "Bananpannkaka.jpg",
     "ingredients": [
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "Ägg",
-            "optional": false
-        },
-		{
-            "amount": 1,
-            "unit": "st",
-            "name": "Banan",
-            "optional": false
-        },
-		{
-            "amount": 1,
-            "unit": "krydmått",
-            "name": "Malet paltbröd",
-            "optional": false
-        },
-        {
-            "amount": 1,
-            "unit": "st",
-            "name": "Kiwi",
-            "optional": true
-        }
+      {"amount":1,"unit":"st","name":"Ägg","optional":false},
+      {"amount":1,"unit":"st","name":"Banan","optional":false},
+      {"amount":1,"unit":"krydmått","name":"Malet paltbröd","optional":false},
+      {"amount":1,"unit":"st","name":"Kiwi","optional":true}
     ],
-
     "instructions": [
-        "Mosa bananen mha gaffel i en skål",
-        "knäck i ägget och paltbrödet och blanda",
-		"Steck i smör på låg värme"
+      "Mosa bananen mha gaffel i en skål",
+      "knäck i ägget och paltbrödet och blanda",
+      "Steck i smör på låg värme"
     ]
-},
-
-
-"Vardagsvåfflor": {
+  },
+  "Vardagsvåfflor": {
     "servings": 4,
-
     "time": "30 min",
     "timePrep": "10",
     "timeCook": "20",
-
     "difficulty": "Lätt",
-
     "info": "Enkla våfflor som funkar med glutenfrit mjöl",
-
     "link": "",
-
     "lastCooked": "2026-01-01",
     "cookCount": 2,
     "score": 5,
-
     "mealType": "Mellanmål",
-
-    "categories": [
-        "Våfflor"
-    ],
-
-    "image": "Vardagsvåfflor",
-
+    "categories": ["Våfflor"],
+    "image": "Vardagsvåfflor.jpg",
     "ingredients": [
-        {
-            "amount": 50,
-            "unit": "g",
-            "name": "Smör",
-            "optional": false
-        },
-		{
-            "amount": 2,
-            "unit": "st",
-            "name": "Ägg",
-            "optional": false
-        },
-		{
-            "amount": 6,
-            "unit": "dl",
-            "name": "mjölk",
-            "optional": false
-        },
-		{
-            "amount": 5,
-            "unit": "dl",
-            "name": "vetemjöl",
-            "optional": false
-        },
-        {
-            "amount": 2,
-            "unit": "krm",
-            "name": "Salt",
-            "optional": false
-        }
+      {"amount":50,"unit":"g","name":"Smör","optional":false},
+      {"amount":2,"unit":"st","name":"Ägg","optional":false},
+      {"amount":6,"unit":"dl","name":"mjölk","optional":false},
+      {"amount":5,"unit":"dl","name":"vetemjöl","optional":false},
+      {"amount":2,"unit":"krm","name":"Salt","optional":false}
     ],
-
     "instructions": [
-        "Smält matfettet och låt det svalna.",
-        "Vispa upp äggen i en skål.",
-		"Tillsätt hälften av mjölken och hela mjölmängden, vispa eller rör smeten slät.",
-		"Häll i resten av mjölken, saltet och matfettet.",
-		"Grädda våfflorna (glöm ej smör i våffeljärnet)."
+      "Smält matfettet och låt det svalna.",
+      "Vispa upp äggen i en skål.",
+      "Tillsätt hälften av mjölken och hela mjölmängden, vispa eller rör smeten slät.",
+      "Häll i resten av mjölken, saltet och matfettet.",
+      "Grädda våfflorna (glöm ej smör i våffeljärnet)."
     ]
-}
+  }
 }
